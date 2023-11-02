@@ -36,7 +36,7 @@ void LinkingAlgoByDirectionGeometric::initialize(const HGCalDDDConstants *hgcons
   propagator_ = propH;
 }
 
-math::XYZVector LinkingAlgoByDirectionGeometric::propagateTrackster(const Trackster &t,
+ticl::Trackster::Vector LinkingAlgoByDirectionGeometric::propagateTrackster(const Trackster &t,
                                                                     const unsigned idx,
                                                                     float zVal,
                                                                     std::array<TICLLayerTile, 2> &tracksterTiles) {

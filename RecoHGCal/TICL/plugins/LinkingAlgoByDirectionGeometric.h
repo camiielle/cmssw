@@ -45,11 +45,11 @@ namespace ticl {
     static void fillPSetDescription(edm::ParameterSetDescription &desc);
 
   private:
-    typedef math::XYZVector Vector;
+    typedef math::XYZVectorF Vector;
 
     void buildLayers();
 
-    math::XYZVector propagateTrackster(const Trackster &t,
+    math::XYZVectorF propagateTrackster(const Trackster &t,
                                        const unsigned idx,
                                        float zVal,
                                        std::array<TICLLayerTile, 2> &tracksterTiles);

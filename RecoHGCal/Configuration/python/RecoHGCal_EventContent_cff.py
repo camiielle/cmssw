@@ -19,7 +19,9 @@ TICL_RECO = cms.PSet(
        'keep *_ticlTrackstersHFNoseMIP_*_*',
        'keep *_ticlTrackstersHFNoseHAD_*_*',
        'keep *_ticlTrackstersHFNoseMerge_*_*',] +
-      ['keep *_pfTICL_*_*']
+      ['keep *_pfTICL_*_*'] +
+      ['keep *_ticlGraph_*_*'] +
+      ['keep CaloParticles_mix_*_*', 'keep SimClusters_mix_*_*'] 
       )
     )
 TICL_RECO.outputCommands.extend(TICL_AOD.outputCommands)
@@ -28,6 +30,7 @@ TICL_RECO.outputCommands.extend(TICL_AOD.outputCommands)
 TICL_FEVT = cms.PSet(
     outputCommands = cms.untracked.vstring(
       'keep *_ticlSimTracksters_*_*',
+      'keep *_ticlSimTICLCandidates_*_*',
       'keep *_ticlSimTrackstersFromCP_*_*',
       )
     )
@@ -45,8 +48,7 @@ def customiseHGCalOnlyEventContent(process):
                                             'keep recoTrackExtras_generalTracks_*_*',
                                             'keep SimTracks_g4SimHits_*_*',
                                             'keep SimVertexs_g4SimHits_*_*',
-                                            'keep *_layerClusterSimClusterAssociationProducer_*_*',
-                                            'keep *_layerClusterCaloParticleAssociationProducer_*_*',
+                                            'keep *_ticlGraph_*_*',
                                             'keep *_randomEngineStateProducer_*_*',
                                             ])
 

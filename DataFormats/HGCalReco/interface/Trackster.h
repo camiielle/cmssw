@@ -18,8 +18,7 @@
 namespace ticl {
   class Trackster {
   public:
-    typedef math::XYZVector Vector;
-
+    typedef math::XYZVectorF Vector;
     enum IterationIndex { TRKEM = 0, EM, TRKHAD, HAD, MIP, SIM, SIM_CP };
 
     // types considered by the particle identification
@@ -190,7 +189,7 @@ namespace ticl {
     float raw_em_pt_;
 
     // PCA Variables
-    Vector barycenter_;
+    ticl::Trackster::Vector barycenter_;
     std::array<float, 3> eigenvalues_;
     std::array<Vector, 3> eigenvectors_;
     std::array<float, 3> sigmas_;
