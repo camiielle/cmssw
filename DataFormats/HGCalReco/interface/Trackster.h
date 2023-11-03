@@ -19,7 +19,6 @@ namespace ticl {
   class Trackster {
   public:
     typedef math::XYZVectorF Vector;
-
     enum IterationIndex { TRKEM = 0, EM, TRKHAD, HAD, MIP, SIM, SIM_CP };
 
     // types considered by the particle identification
