@@ -56,21 +56,26 @@
   <class name="edm::Wrapper<TICLCandidate>" />
   <class name="edm::Wrapper<std::vector<TICLCandidate> >" />
 
-  <class name="ElementaryNode">
+  <class name="Elementary">
   </class>
-  <class name="std::vector<ElementaryNode>" />
-  <class name="edm::Wrapper<ElementaryNode>" />
-  <class name="edm::Wrapper<std::vector<ElementaryNode> >" />
+  <class name="std::vector<Elementary>" />
+  <class name="edm::Wrapper<Elementary>" />
+  <class name="edm::Wrapper<std::vector<Elementary> >" />
 
-  <class name="Node<ElementaryNode>">
+  <class name="Node">
   </class>
-  <class name="std::vector<Node<ElementaryNode>>" />
-  <class name="edm::Wrapper<Node<ElementaryNode>>" />
-  <class name="edm::Wrapper<std::vector<Node<ElementaryNode>> >" />
+  <class name="std::vector<Node>" />
+  <class name="edm::Wrapper<Node>" />
+  <class name="edm::Wrapper<std::vector<Node>>" />
 
-  <class name="TICLGraph<ElementaryNode>">
+  <class name="Community">
   </class>
-  <class name="edm::Wrapper<TICLGraph<ElementaryNode>>" />
-  <class name="std::vector<TICLGraph<ElementaryNode>>" />
-  <class name="edm::Wrapper<std::vector<TICLGraph<ElementaryNode>> >" />
+  <class name="std::vector<Community>" />
+  <class name="edm::Wrapper<Community>" />
+  <class name="edm::Wrapper<std::vector<Community>>" />
+  <class name="TICLGraph">
+  </class>
+  <class name="edm::Wrapper<TICLGraph>" />
+  <class name="std::vector<TICLGraph>" />
+  <class name="edm::Wrapper<std::vector<TICLGraph>>" />
 </lcgdict>
