@@ -327,7 +327,7 @@ void TracksterLinkingbySkeletons::linkTracksters(
   std::vector<int> maskReceivedLink(tracksters.size(), 1);
   std::vector<int> isRootTracksters(tracksters.size(), 1);
 
-  std::vector<Node> allNodes;
+  std::vector<Elementary> allNodes;
   for (size_t it = 0; it < tracksters.size(); ++it) {
     allNodes.emplace_back(it);
   }

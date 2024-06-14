@@ -75,8 +75,8 @@ void TracksterLinkingbyLeiden::fillPSetDescription(edm::ParameterSetDescription 
   TracksterLinkingAlgoBase::fillPSetDescription(desc);
 }
 
-void TracksterLinkingbyLeiden::leidenAlgorithm(TICLGraph &graph,
-                                               Partition &partition,
+void TracksterLinkingbyLeiden::leidenAlgorithm(ticl::TICLGraph &graph,
+                                               ticl::Partition &partition,
                                                std::vector<Flat> &flatFinalPartition) {
   moveNodesFast(partition, gamma_);
 

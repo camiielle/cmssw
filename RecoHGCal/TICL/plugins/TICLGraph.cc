@@ -1,5 +1,6 @@
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "RecoHGCal/TICL/plugins/TICLGraph.h"
+
 namespace ticl {
   void Elementary::findSubComponents(std::vector<Elementary>& graph,
                                      std::vector<unsigned int>& subComponent,
@@ -15,7 +16,7 @@ namespace ticl {
       }
     }
   }
-}  // namespace ticl
+
 
 std::vector<std::vector<unsigned int>> TICLGraph::findSubComponents() {
   std::vector<std::vector<unsigned int>> components;
@@ -149,3 +150,4 @@ bool isCommunityContained(Community community, Community const& subset) {
   }
   return isContained;
 }
+}  // namespace ticl

@@ -62,18 +62,18 @@ namespace ticl {
   };
 }  // namespace ticl
 
-bool isAlgorithmDone(TICLGraph const &graph, Partition const &partition);
+bool isAlgorithmDone(ticl::TICLGraph const &graph, ticl::Partition const &partition);
 
-Partition &removeEmptyCommunities(Partition &partition);
+ticl::Partition &removeEmptyCommunities(ticl::Partition &partition);
 
-Partition &refinePartition(
-    TICLGraph const &graph, Partition &partition, Partition &singlePartition, double gamma, double theta);
+ticl::Partition &refinePartition(
+    ticl::TICLGraph const &graph, ticl::Partition &partition, ticl::Partition &singlePartition, double gamma, double theta);
 
-Partition &moveNodesFast(Partition &partition, double gamma);
+ticl::Partition &moveNodesFast(ticl::Partition &partition, double gamma);
 
-Partition &singletonPartition(TICLGraph const &graph, Partition &singlePartition);
+ticl::Partition &singletonPartition(ticl::TICLGraph const &graph, ticl::Partition &singlePartition);
 
-Partition &mergeNodesSubset(Partition &partition, Community const &subset, double gamma);
+ticl::Partition &mergeNodesSubset(ticl::Partition &partition, ticl::Community const &subset, double gamma);
 
-void aggregateGraph(TICLGraph &graph, Partition const &partition);
+void aggregateGraph(ticl::TICLGraph &graph, ticl::Partition const &partition);
 #endif
