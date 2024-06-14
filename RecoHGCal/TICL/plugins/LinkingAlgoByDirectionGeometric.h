@@ -39,6 +39,7 @@ namespace ticl {
                         const edm::Handle<edm::ValueMap<float>>,
                         const std::vector<reco::Muon> &,
                         const edm::Handle<std::vector<Trackster>>,
+                        const edm::Handle<TICLGraph> &,
                         const bool useMTDTiming,
                         std::vector<TICLCandidate> &,
                         std::vector<TICLCandidate> &) override;
@@ -54,6 +55,7 @@ namespace ticl {
                               const unsigned idx,
                               float zVal,
                               std::array<TICLLayerTile, 2> &tracksterTiles);
+
 
     void findTrackstersInWindow(const std::vector<std::pair<Vector, unsigned>> &seedingCollection,
                                 const std::array<TICLLayerTile, 2> &tracksterTiles,

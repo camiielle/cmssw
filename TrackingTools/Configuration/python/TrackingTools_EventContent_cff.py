@@ -11,11 +11,11 @@ from Configuration.Eras.Modifier_phase2_hgcal_cff import phase2_hgcal
 
 #RECO content
 TrackingToolsRECO = cms.PSet(
-    outputCommands = cms.untracked.vstring('keep *_CkfElectronCandidates_*_*', 
+    outputCommands = cms.untracked.vstring('keep *_CkfElectronCandidates_*_*',
         'keep *_GsfGlobalElectronTest_*_*',
         'keep *_electronMergedSeeds_*_*',
-        'keep recoGsfTrackExtras_electronGsfTracks_*_*', 
-        'keep recoTrackExtras_electronGsfTracks_*_*', 
+        'keep recoGsfTrackExtras_electronGsfTracks_*_*',
+        'keep recoTrackExtras_electronGsfTracks_*_*',
         'keep TrackingRecHitsOwned_electronGsfTracks_*_*'
     )
 )

@@ -68,6 +68,7 @@ ticlTracksterLinksTask = cms.Task(ticlTracksterLinks)
 
 mergeTICLTask = cms.Task(ticlLayerTileTask
     ,ticlIterationsTask
+    ,ticlGraphTask
     ,ticlTracksterMergeTask
 )
 ticl_v5.toReplaceWith(mergeTICLTask, mergeTICLTask.copyAndExclude([ticlTracksterMergeTask]))

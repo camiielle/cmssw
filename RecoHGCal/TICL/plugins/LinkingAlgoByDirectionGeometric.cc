@@ -41,6 +41,7 @@ Vector LinkingAlgoByDirectionGeometric::propagateTrackster(const Trackster &t,
                                                            const unsigned idx,
                                                            float zVal,
                                                            std::array<TICLLayerTile, 2> &tracksterTiles) {
+
   // needs only the positive Z co-ordinate of the surface to propagate to
   // the correct sign is calculated inside according to the barycenter of trackster
   Vector const &baryc = t.barycenter();
@@ -236,6 +237,7 @@ void LinkingAlgoByDirectionGeometric::linkTracksters(const edm::Handle<std::vect
                                                      const edm::Handle<edm::ValueMap<float>> tkTimeQual_h,
                                                      const std::vector<reco::Muon> &muons,
                                                      const edm::Handle<std::vector<Trackster>> tsH,
+                                                     const edm::Handle<TICLGraph> &tgH,
                                                      const bool useMTDTiming,
                                                      std::vector<TICLCandidate> &resultLinked,
                                                      std::vector<TICLCandidate> &chargedHadronsFromTk) {
