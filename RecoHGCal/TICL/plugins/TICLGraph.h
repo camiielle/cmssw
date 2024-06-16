@@ -13,22 +13,23 @@
 // an elementary node is a single trackster
 
 namespace ticl {
+
   class TICLGraph;
+
   class Elementary {
     unsigned index_;
     bool isTrackster_;
     std::vector<unsigned int> outerNeighboursId_;
     std::vector<unsigned int> innerNeighboursId_;
     std::vector<unsigned int> neighboursId_;
-
     bool alreadyVisited_{false};
-    //bool areCompatible(const std::vector<Node>& graph, const unsigned int& outerNode) { return true; };
+    //elementary is a Node of degree 0
     int degree_{0};
+    //bool areCompatible(const std::vector<Node>& graph, const unsigned int& outerNode) { return true; };
 
   public:
     Elementary() = default;
     Elementary(unsigned index, bool isTrackster = true) : index_{index}, isTrackster_{isTrackster} {}
-
     Elementary(Elementary const&) = default;
     Elementary& operator=(Elementary const&) = default;
     Elementary(Elementary&&) = default;
@@ -39,12 +40,12 @@ namespace ticl {
     void addInnerNeighbour(unsigned int trackster_id) { innerNeighboursId_.push_back(trackster_id); }
     void addNeighbour(unsigned int trackster_id) { neighboursId_.push_back(trackster_id); }
     unsigned int getId() const { return index_; }
+    int getDegree() const { return degree_; }
     std::vector<unsigned int> const& getOuterNeighbours() const { return outerNeighboursId_; }
     std::vector<unsigned int> const& getInnerNeighbours() const { return innerNeighboursId_; }
     std::vector<unsigned int> const& getNeighbours() const { return neighboursId_; }
-    int getDegree() const { return degree_; }
 
-    void findSubComponents(std::vector<Elementary>& graph, std::vector<unsigned int>& subComponent, std::string tabs);
+    void findSubComponents(std::vector<Elementary>& graph, std::vector<unsigned int>& subComponent, std::string& tabs);
 
     bool isInnerNeighbour(const unsigned int tid) {
       auto findInner = std::find(innerNeighboursId_.begin(), innerNeighboursId_.end(), tid);
@@ -110,7 +111,7 @@ namespace ticl {
     // can i remove default constructor ?? edm::Wrapper problem
     // without default constructor i could initialize connectedComponents when building the Graph
     TICLGraph() = default;
-    TICLGraph(std::vector<Elementary> const& elemNodes, std::vector<int> isRootNode) : isRootNode_{isRootNode} {
+    TICLGraph(std::vector<Elementary> const& elemNodes, std::vector<int> const& isRootNode) : isRootNode_{isRootNode} {
       std::vector<Node> nodes{};
       nodes.reserve(elemNodes.size());
       for (auto const& e : elemNodes) {
@@ -119,9 +120,10 @@ namespace ticl {
       }
       nodes_ = nodes;
     }
-
     TICLGraph(std::vector<Node> const& nodes) : nodes_{nodes} {}
-    TICLGraph(std::vector<Node> const& nodes, std::vector<int> isRootNode) : nodes_{nodes}, isRootNode_{isRootNode} {}
+    TICLGraph(std::vector<Node> const& nodes, std::vector<int> const& isRootNode)
+        : nodes_{nodes}, isRootNode_{isRootNode} {}
+        
     std::vector<Node> const& getNodes() const { return nodes_; }
     std::vector<Node>& getNodes() { return nodes_; }
     Node const& getNode(int i) const { return nodes_[i]; }

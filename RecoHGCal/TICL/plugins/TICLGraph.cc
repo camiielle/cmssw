@@ -4,7 +4,7 @@
 namespace ticl {
   void Elementary::findSubComponents(std::vector<Elementary>& graph,
                                      std::vector<unsigned int>& subComponent,
-                                     std::string tabs) {
+                                     std::string& tabs) {
     tabs += "\t";
     if (!alreadyVisited_) {
       LogDebug("TICLGraph") << tabs << " Visiting node " << index_ << std::endl;
