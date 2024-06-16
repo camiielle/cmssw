@@ -61,10 +61,11 @@ void TracksterLinkingbyLeiden::initialize(const HGCalDDDConstants *hgcons,
   propagator_ = propH;
 }
 
-void TracksterLinkingbyLeiden::linkTracksters(const Inputs &input,
-                    std::vector<Trackster> &resultTracksters,
-                    std::vector<std::vector<unsigned int>> &linkedResultTracksters,
-                    std::vector<std::vector<unsigned int>> &linkedTracksterIdToInputTracksterId) {
+void TracksterLinkingbyLeiden::linkTracksters(
+    const Inputs &input,
+    std::vector<Trackster> &resultTracksters,
+    std::vector<std::vector<unsigned int>> &linkedResultTracksters,
+    std::vector<std::vector<unsigned int>> &linkedTracksterIdToInputTracksterId) {
   std::cout << "Il mio bellissimo algoritmo";
 }
 
@@ -107,13 +108,16 @@ void TracksterLinkingbyLeiden::leidenAlgorithm(ticl::TICLGraph &graph,
     partition.flattenPartition(flatFinalPartition);
   }
 }
+
 bool isAlgorithmDone(TICLGraph const &graph, Partition const &partition) {
   return (partition.getCommunities()).size() == (graph.getNodes()).size();
 }
 
-int factorial(int n) { return (n == 1 || n == 0) ? 1 : n * factorial(n - 1); }
+//tested on godbolt
+long long int factorial(int n) { return (n == 1 || n == 0) ? 1 : n * factorial(n - 1); }
 
-int binomialCoefficient(int n, int k) {
+//tested on godbolt
+long long int binomialCoefficient(int n, int k) {
   assert(n >= 0);
   assert(k >= 0);
   if (n < k)
@@ -125,27 +129,30 @@ int binomialCoefficient(int n, int k) {
 }
 
 //quality function, Constant Potts Model
-double CPM(Partition const &partition, double gamma) {
-  double CPMResult{};
+//tested on godbolt
+long long int CPM(Partition const &partition, long long int gamma) {
+  long long int CPMResult{};
   for (auto const &community : partition.getCommunities()) {
-    CPMResult += (numberOfEdges(community, community) - gamma * binomialCoefficient(communitySize(community), 2));
+    CPMResult += (static_cast<long long int>(numberOfEdges(community, community)) -
+                  (gamma)*binomialCoefficient(communitySize(community), 2));
   }
   return CPMResult;
 }
 
-double CPM_contribution_from_new_community(Node const &node, double gamma) {
-  Community newCommunity{std::vector<Node>{node}, 1};
-  double result{(-gamma * binomialCoefficient(communitySize(newCommunity), 2))};
-  assert(result <= 0.);
+//interpreting E(C,C) as non null even if C has a single node, if degree(node)>0
+long long int CPM_contribution_from_new_community(Node const &node, long long int gamma) {
+  Community newCommunity{std::vector<Node>{node}, degree(node) + 1};
+  long long int result{(static_cast<long long int>(numberOfEdges(newCommunity, newCommunity)) -
+                        gamma * binomialCoefficient(communitySize(newCommunity), 2))};
   return result;
 }
 
-double CPM_after_move(Partition const &partition,
-                      double gamma,
-                      Community const &communityFrom,
-                      Community const &communityTo,
-                      Node const &node) {
-  double CPMResult{};
+long long int CPM_after_move(Partition const &partition,
+                             long long int gamma,
+                             Community const &communityFrom,
+                             Community const &communityTo,
+                             Node const &node) {
+  long long int CPMResult{};
   auto const &communities = partition.getCommunities();
   for (auto const &community : communities) {
     if (community == communityFrom) {
@@ -155,12 +162,12 @@ double CPM_after_move(Partition const &partition,
                    std::back_inserter(vectorWithoutNode),
                    [&](Node const &n) { return !(n == node); });
       Community communityWithoutNode{vectorWithoutNode, communityFrom.getDegree()};
-      CPMResult += (numberOfEdges(communityWithoutNode, communityWithoutNode) -
+      CPMResult += (static_cast<long long int>(numberOfEdges(communityWithoutNode, communityWithoutNode)) -
                     gamma * binomialCoefficient(communitySize(communityWithoutNode), 2));
     } else if (community == communityTo) {
       Community communityWithNewNode{community};
       communityWithNewNode.getNodes().push_back(node);
-      CPMResult += (numberOfEdges(communityWithNewNode, communityWithNewNode) -
+      CPMResult += (static_cast<long long int>(numberOfEdges(communityWithNewNode, communityWithNewNode)) -
                     gamma * binomialCoefficient(communitySize(communityWithNewNode), 2));
     } else {
       CPMResult += (numberOfEdges(community, community) - gamma * binomialCoefficient(communitySize(community), 2));
@@ -200,7 +207,7 @@ Partition &removeEmptyCommunities(Partition &partition) {
   return partition;
 }
 
-Partition &moveNodesFast(Partition &partition, double gamma) {
+Partition &moveNodesFast(Partition &partition, long long int gamma) {
   auto shuffledCommunities = partition.getCommunities();
   std::random_device rd;
   std::mt19937 g(rd());
@@ -214,23 +221,34 @@ Partition &moveNodesFast(Partition &partition, double gamma) {
 
   while (!queue.empty()) {
     Node const &currentNode{queue.front()};
-    auto currentCPM = CPM(partition, gamma) + CPM_contribution_from_new_community(currentNode, gamma);
+    auto currentCPM = CPM(partition, gamma);
     auto &currentCommunity = partition.getCommunities()[partition.findCommunityIndex(currentNode)];
     auto &communities = partition.getCommunities();
 
+    //variation of quality function if i move the node to a different community
     int indexBestCommunity{};
     int iterationIndex{-1};
-    double bestDeltaCPM{0.};
+    long long int bestDeltaCPM{0};
     for (auto const &community : communities) {
       ++iterationIndex;
-      double AfterMoveCPM{CPM_after_move(partition, gamma, currentCommunity, community, currentNode)};
-      double deltaCPM{AfterMoveCPM - currentCPM};
+      auto AfterMoveCPM{CPM_after_move(partition, gamma, currentCommunity, community, currentNode)};
+      auto deltaCPM{AfterMoveCPM - currentCPM};
       if (deltaCPM > bestDeltaCPM) {
         bestDeltaCPM = deltaCPM;
         indexBestCommunity = iterationIndex;
       }
     }
-    if (bestDeltaCPM > 0.) {
+
+    //variation of quality function if i move the node to an empty community
+    auto deltaCPMFromEmpty = CPM_contribution_from_new_community(currentNode, gamma) - currentCPM;
+    if (deltaCPMFromEmpty > bestDeltaCPM) {
+      bestDeltaCPM = -1;
+      Community newCommunity{std::vector<Node>{}, degree(currentNode) + 1};
+      communities.push_back(newCommunity);
+      moveNode(currentCommunity, newCommunity, currentNode);
+    }
+
+    if (bestDeltaCPM > 0) {
       moveNode(currentCommunity, communities[indexBestCommunity], currentNode);
       std::vector<Node> currentNeighbours{};
       for (auto const &community : communities) {
@@ -242,6 +260,7 @@ Partition &moveNodesFast(Partition &partition, double gamma) {
           }
         }
       }
+
       // making sure all nbrs of currentNode who are not in bestCommunity will be visited
       for (auto const &neighbour : currentNeighbours) {
         queue.push(neighbour);
@@ -267,7 +286,7 @@ Partition &singletonPartition(TICLGraph const &graph, Partition &singlePartition
   return singlePartition;
 }
 
-bool isNodeWellConnected(Node const &node, Community const &subset, double gamma) {
+bool isNodeWellConnected(Node const &node, Community const &subset, long long int gamma) {
   Community singletonCommunity{std::vector{node}, degree(node) + 1};
   int edges{numberOfEdges(singletonCommunity, subset)};
   assert(edges >= 0);
@@ -276,7 +295,7 @@ bool isNodeWellConnected(Node const &node, Community const &subset, double gamma
   return (edges >= (gamma * nodeSize * (subsetSize - nodeSize)));
 }
 
-bool isCommunityWellConnected(Community const &community, Community const &subset, double gamma) {
+bool isCommunityWellConnected(Community const &community, Community const &subset, long long int gamma) {
   Community subsetMinuscommunity{};
   for (auto const &node : subset.getNodes()) {
     auto it = std::find(community.getNodes().begin(), community.getNodes().end(), node);
@@ -296,15 +315,15 @@ int extractRandomCommunityIndex(std::vector<Community> const &communities,
                                 Node const &node,
                                 Community const &nodeCommunity,
                                 Community const &subset,
-                                double gamma,
+                                long long int gamma,
                                 double theta) {
-  double currentCPM = CPM(partition, gamma);
+  auto currentCPM = CPM(partition, gamma);
   std::vector<double> deltaCPMs{};
 
   //calculating delta_H for all communities
   for (auto const &community : communities) {
     if (isCommunityWellConnected(community, subset, gamma)) {
-      double afterMoveCPM{CPM_after_move(partition, gamma, nodeCommunity, community, node)};
+      auto afterMoveCPM{CPM_after_move(partition, gamma, nodeCommunity, community, node)};
       deltaCPMs.push_back((afterMoveCPM - currentCPM));
     }
   }
@@ -332,7 +351,7 @@ int extractRandomCommunityIndex(std::vector<Community> const &communities,
 
 //arrived here atm
 
-Partition &mergeNodesSubset(Partition &partition, Community const &subset, double gamma, double theta) {
+Partition &mergeNodesSubset(Partition &partition, Community const &subset, long long int gamma, double theta) {
   auto &communities = partition.getCommunities();
 
   for (auto const &node : subset.getNodes()) {
@@ -353,7 +372,7 @@ Partition &mergeNodesSubset(Partition &partition, Community const &subset, doubl
 }
 
 Partition &refinePartition(
-    TICLGraph const &graph, Partition &partition, Partition &singlePartition, double gamma, double theta) {
+    TICLGraph const &graph, Partition &partition, Partition &singlePartition, long long int gamma, double theta) {
   //fills an empty partition with a singleton partition
   auto &refinedPartition = singletonPartition(graph, singlePartition);
   auto const &communities = partition.getCommunities();
