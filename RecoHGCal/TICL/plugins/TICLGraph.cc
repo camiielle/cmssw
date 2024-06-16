@@ -140,9 +140,11 @@ struct Neighbours {
 };
 
 // two nodes are neighbours if at least two of their elementary nodes are
+//tested on godbolt
 bool areNeighbours(Node const& n1, Node const& n2) { return std::visit(Neighbours{}, n1, n2); }
 
-//tells me if community is contained within a certain subset
+//tells me if a community is contained within a certain subset
+//tested on godbolt
 bool isCommunityContained(Community const& community, Community const& subset) {
   bool isContained{true};
   for (auto const& node : community.getNodes()) {
