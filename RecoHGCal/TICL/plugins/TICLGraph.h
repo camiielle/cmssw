@@ -123,7 +123,7 @@ namespace ticl {
     TICLGraph(std::vector<Node> const& nodes) : nodes_{nodes} {}
     TICLGraph(std::vector<Node> const& nodes, std::vector<int> const& isRootNode)
         : nodes_{nodes}, isRootNode_{isRootNode} {}
-        
+
     std::vector<Node> const& getNodes() const { return nodes_; }
     std::vector<Node>& getNodes() { return nodes_; }
     Node const& getNode(int i) const { return nodes_[i]; }
@@ -142,7 +142,7 @@ namespace ticl {
 
   bool areNeighbours(Node const& nodeA, Node const& nodeB);
 
-  bool isCommunityContained(Community community, Community const& subset);
+  bool isCommunityContained(Community const& community, Community const& subset);
 
   class Partition {
     std::vector<Community> communities_{};
@@ -166,7 +166,7 @@ namespace ticl {
       std::transform(communities_.begin(),
                      communities_.end(),
                      std::back_inserter(flattenedPartition),
-                     [this](auto const& community) { return flatten(community); });
+                     [](auto const& community) { return flatten(community); });
 
       return flattenedPartition;
     }
