@@ -160,19 +160,22 @@ namespace ticl {
     Partition(std::vector<Community> const& communities) : communities_{communities} {}
     std::vector<Community> const& getCommunities() const { return communities_; }
     std::vector<Community>& getCommunities() { return communities_; }
-
+    
+    //tested on godbolt
     auto& flattenPartition(std::vector<Flat>& flattenedPartition) {
+      assert(flattenedPartition.empty());
       flattenedPartition.reserve(communities_.size());
-      std::transform(communities_.begin(),
-                     communities_.end(),
-                     std::back_inserter(flattenedPartition),
-                     [](auto const& community) { return flatten(community); });
+      std::transform(
+          communities_.begin(), communities_.end(), std::back_inserter(flattenedPartition), [](auto const& community) {
+            return flatten(community);
+          });
 
       return flattenedPartition;
     }
 
+    //tested on godbolt
     Community const& findCommunity(Node const& node) const { return *findCommunityImpl(node); }
-
+    //tested on godbolt
     auto findCommunityIndex(Node const& node) const {
       return std::distance(communities_.begin(), findCommunityImpl(node));
     }

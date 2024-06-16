@@ -42,7 +42,7 @@ struct Equal {
     return (e1.getId() == e2.getId()) && (e1.getNeighbours() == e2.getNeighbours());
   }
 
-  bool operator()(Community const& c1, Community const& c2) { return c1.getNodes() == c2.getNodes(); }
+  bool operator()(Community const& c1, Community const& c2) { return c1.getNodes() == c2.getNodes() && c1.getDegree()==c2.getDegree(); }
 
   //these two are necessary bc i need to cover all combinations. A node is never equal to a community by definition
   bool operator()(Community const& c1, Elementary const& e2) { return false; }
@@ -51,6 +51,7 @@ struct Equal {
 
 bool operator==(Node const& n1, Node const& n2) { return std::visit(Equal{}, n1, n2); }
 
+//tested on godbolt
 void flatten(Community const& community, Flat& flat) {
   for (auto& node : community.getNodes()) {
     if (auto* elementary = std::get_if<Elementary>(&node); elementary != nullptr) {
@@ -61,6 +62,7 @@ void flatten(Community const& community, Flat& flat) {
   }
 }
 
+//tested on godbolt
 Flat flatten(Community const& community) {
   int const size{communitySize(community)};
   Flat flattenedCommunity{};
@@ -70,6 +72,7 @@ Flat flatten(Community const& community) {
 }
 
 //godbolt gives error if i put =0 in definition instead of declaration
+//the size of a community is defined recursively (number of Elementary nodes)
 int communitySize(Community const& community, int size) {
   for (auto const& node : community.getNodes()) {
     if (std::holds_alternative<Elementary>(node)) {
@@ -81,12 +84,13 @@ int communitySize(Community const& community, int size) {
 }
 
 // the number of edges b/w 2 nodes is the number of edges between their elementary nodes
+//tested on godbolt
 int numberOfEdges(Community const& communityA, Community const& communityB) {
   auto flattenedCommunityA = flatten(communityA);
   auto flattenedCommunityB = flatten(communityB);
   std::vector<unsigned int> membersB{};
   membersB.reserve(flattenedCommunityB.size());
-  std::transform(flattenedCommunityB.begin(), flattenedCommunityB.begin(), std::back_inserter(membersB), [](auto& e) {
+  std::transform(flattenedCommunityB.begin(), flattenedCommunityB.end(), std::back_inserter(membersB), [](auto& e) {
     return e.getId();
   });
   std::sort(membersB.begin(), membersB.end());
