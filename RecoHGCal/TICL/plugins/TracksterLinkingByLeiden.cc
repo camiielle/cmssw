@@ -311,11 +311,11 @@ Partition &singletonPartition(TICLGraph const &graph, Partition &singlePartition
 
 bool isNodeWellConnected(Node const &node, Community const &subset, long long int gamma) {
   auto nodes = subset.getNodes();
-  if (std::find(nodes.begin(), nodes.end(), node) != nodes.end()){
+  if (std::find(nodes.begin(), nodes.end(), node) != nodes.end()) {
     nodes.erase(std::remove(nodes.begin(), nodes.end(), node));
   }
   Community singletonCommunity{std::vector<Node>{node}, degree(node) + 1};
-  Community subsetWithoutNode {nodes, degree(subset)};
+  Community subsetWithoutNode{nodes, degree(subset)};
   long long int edges{numberOfEdges(singletonCommunity, subsetWithoutNode)};
   assert(edges >= 0);
   long long int nodeSize{communitySize(singletonCommunity)};
@@ -324,10 +324,9 @@ bool isNodeWellConnected(Node const &node, Community const &subset, long long in
 }
 
 bool isCommunityWellConnected(Community const &community, Community const &subset, long long int gamma) {
-  Community subsetMinuscommunity{};
+  Community subsetMinuscommunity{std::vector<Node>{}, degree(subset)};
   for (auto const &node : subset.getNodes()) {
-    auto it = std::find(community.getNodes().begin(), community.getNodes().end(), node);
-    if (it == community.getNodes().end()) {
+    if (std::find(community.getNodes().begin(), community.getNodes().end(), node) == community.getNodes().end()) {
       subsetMinuscommunity.getNodes().push_back(node);
     }
   }
@@ -346,13 +345,15 @@ int extractRandomCommunityIndex(std::vector<Community> const &communities,
                                 long long int gamma,
                                 double theta) {
   auto currentCPM = CPM(partition, gamma);
-  std::vector<double> deltaCPMs{};
+  std::vector<long long int> deltaCPMs{};
 
   //calculating delta_H for all communities
   for (auto const &community : communities) {
     if (isCommunityWellConnected(community, subset, gamma)) {
-      auto afterMoveCPM{CPM_after_move(partition, gamma, nodeCommunity, community, node)};
-      deltaCPMs.push_back((afterMoveCPM - currentCPM));
+      deltaCPMs.push_back((CPM_after_move(partition, gamma, nodeCommunity, community, node) - currentCPM));
+    } else {
+      // communities not well connected are not considered
+      deltaCPMs.push_back(-1);
     }
   }
 
@@ -377,17 +378,16 @@ int extractRandomCommunityIndex(std::vector<Community> const &communities,
   return resultIndex;
 }
 
-//arrived here atm
-
 Partition &mergeNodesSubset(Partition &partition, Community const &subset, long long int gamma, double theta) {
   auto &communities = partition.getCommunities();
 
+  //consider only nodes that are well connected within subset S
   for (auto const &node : subset.getNodes()) {
     if (isNodeWellConnected(node, subset, gamma)) {
       int index{static_cast<int>(partition.findCommunityIndex(node))};
       auto &nodeCommunity = communities[index];
-
       assert((communitySize(nodeCommunity)) != 0);
+      //consider only nodes that have not yet been merged
       if (communitySize(nodeCommunity) == 1) {
         int communityToIndex{
             extractRandomCommunityIndex(communities, partition, node, nodeCommunity, subset, gamma, theta)};
