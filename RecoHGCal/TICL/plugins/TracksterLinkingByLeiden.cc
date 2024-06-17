@@ -304,17 +304,22 @@ Partition &singletonPartition(TICLGraph const &graph, Partition &singlePartition
     communities.push_back(singletonCommunity);
   }
   assert(!(singlePartition.getCommunities().empty()));
-  assert(!(singlePartition.getCommunities().size()==nodes.size()));
+  assert(!(singlePartition.getCommunities().size() == nodes.size()));
 
   return singlePartition;
 }
 
 bool isNodeWellConnected(Node const &node, Community const &subset, long long int gamma) {
-  Community singletonCommunity{std::vector{node}, degree(node) + 1};
-  int edges{numberOfEdges(singletonCommunity, subset)};
+  auto nodes = subset.getNodes();
+  if (std::find(nodes.begin(), nodes.end(), node) != nodes.end()){
+    nodes.erase(std::remove(nodes.begin(), nodes.end(), node));
+  }
+  Community singletonCommunity{std::vector<Node>{node}, degree(node) + 1};
+  Community subsetWithoutNode {nodes, degree(subset)};
+  long long int edges{numberOfEdges(singletonCommunity, subsetWithoutNode)};
   assert(edges >= 0);
-  int nodeSize{communitySize(singletonCommunity)};
-  int subsetSize{communitySize(subset)};
+  long long int nodeSize{communitySize(singletonCommunity)};
+  long long int subsetSize{communitySize(subset)};
   return (edges >= (gamma * nodeSize * (subsetSize - nodeSize)));
 }
 
@@ -326,10 +331,10 @@ bool isCommunityWellConnected(Community const &community, Community const &subse
       subsetMinuscommunity.getNodes().push_back(node);
     }
   }
-  int edges{numberOfEdges(community, subsetMinuscommunity)};
+  long long int edges{numberOfEdges(community, subsetMinuscommunity)};
   assert(edges >= 0);
-  int comSize{communitySize(community)};
-  int subsetSize{communitySize(subset)};
+  long long int comSize{communitySize(community)};
+  long long int subsetSize{communitySize(subset)};
   return (edges >= (gamma * comSize * (subsetSize - comSize)));
 }
 
