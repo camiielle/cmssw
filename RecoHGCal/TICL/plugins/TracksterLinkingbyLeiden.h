@@ -55,7 +55,8 @@ namespace ticl {
     edm::ESHandle<MagneticField> bfield_;
     edm::ESHandle<Propagator> propagator_;
 
-    long long int gamma_{1};  //resolution parameter of the algortihm. The higher the gamma, the more communities are yielded
+    long long int gamma_{
+        1};            //resolution parameter of the algortihm. The higher the gamma, the more communities are yielded
     double theta_{1};  //parameter of the refinement step
 
     void leidenAlgorithm(TICLGraph &graph, Partition &partition, std::vector<Flat> &flatFinalPartition);
@@ -66,8 +67,11 @@ bool isAlgorithmDone(ticl::TICLGraph const &graph, ticl::Partition const &partit
 
 ticl::Partition &removeEmptyCommunities(ticl::Partition &partition);
 
-ticl::Partition &refinePartition(
-    ticl::TICLGraph const &graph, ticl::Partition &partition, ticl::Partition &singlePartition, long long int gamma, double theta);
+ticl::Partition &refinePartition(ticl::TICLGraph const &graph,
+                                 ticl::Partition &partition,
+                                 ticl::Partition &singlePartition,
+                                 long long int gamma,
+                                 double theta);
 
 ticl::Partition &moveNodesFast(ticl::Partition &partition, long long int gamma);
 
@@ -75,5 +79,5 @@ ticl::Partition &singletonPartition(ticl::TICLGraph const &graph, ticl::Partitio
 
 ticl::Partition &mergeNodesSubset(ticl::Partition &partition, ticl::Community const &subset, long long int gamma);
 
-void aggregateGraph(ticl::TICLGraph &graph, ticl::Partition const &partition);
+ticl::TICLGraph &aggregateGraph(ticl::TICLGraph &graph, ticl::Partition const &partition);
 #endif

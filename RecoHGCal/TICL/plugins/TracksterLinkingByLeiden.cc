@@ -410,13 +410,11 @@ Partition &refinePartition(
   return refinedPartition;
 }
 
-//is it ok to return this as a copy? or too expensive
-void aggregateGraph(TICLGraph &graph, Partition const &partition) {
-  //communities become nodes in aggregate graph
+//communities become nodes in aggregate graph
+TICLGraph &aggregateGraph(TICLGraph &graph, Partition const &partition) {
   std::vector<Community> const &communities{partition.getCommunities()};
   std::vector<Node> aggregatedNodes{};
   aggregatedNodes.reserve(communities.size());
-
   std::for_each(communities.begin(), communities.end(), [&aggregatedNodes](auto const &community) {
     aggregatedNodes.push_back(Node{community});
   });
@@ -424,4 +422,6 @@ void aggregateGraph(TICLGraph &graph, Partition const &partition) {
   assert(aggregatedNodes.size() == communities.size());
   auto &oldNodes = graph.getNodes();
   oldNodes = aggregatedNodes;
+
+  return graph;
 }
