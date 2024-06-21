@@ -95,7 +95,6 @@ void TracksterLinkingbyLeiden::linkTracksters(
     std::vector<Trackster> &resultTracksters,
     std::vector<std::vector<unsigned int>> &linkedResultTracksters,
     std::vector<std::vector<unsigned int>> &linkedTracksterIdToInputTracksterId) {
-
   //creating the graph
   TICLGraph graph{};
   TICLGraphProducer(input, graph);
@@ -107,7 +106,22 @@ void TracksterLinkingbyLeiden::linkTracksters(
   leidenAlgorithm(graph, partition, flatFinalPartition);
 
   //preparing result output
-  std::cout << "Il mio bellissimo algoritmo";
+  for (unsigned int i = 0; i < flatFinalPartition.size(); ++i) {
+    const auto& flat = flatFinalPartition[i];
+    std::vector<unsigned int> linkedTracksters;
+    Trackster outTrackster;
+    if (!(flat.empty())) {
+      for (auto const &elementary : flat) {
+        auto tracksterIndex = elementary.getId();
+        linkedTracksterIdToInputTracksterId[i].push_back(tracksterIndex);
+        outTrackster.mergeTracksters(input.tracksters[tracksterIndex]);
+      }
+      linkedTracksters.push_back(resultTracksters.size());
+      resultTracksters.push_back(outTrackster);
+      // Store the linked tracksters
+      linkedResultTracksters.push_back(linkedTracksters);
+    }
+  }
 }
 
 void TracksterLinkingbyLeiden::fillPSetDescription(edm::ParameterSetDescription &desc) {
