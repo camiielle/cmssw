@@ -135,7 +135,7 @@ TracksterLinksProducer::TracksterLinksProducer(const edm::ParameterSet &ps)
   auto linkingPSet = ps.getParameter<edm::ParameterSet>("linkingPSet");
   auto algoType = linkingPSet.getParameter<std::string>("type");
 
-  if (algoType == "Skeletons") {
+  if (algoType == "Skeletons" || algoType == "Leiden") {
     std::string detectorName_ = (detector_ == "HFNose") ? "HGCalHFNoseSensitive" : "HGCalEESensitive";
     hdc_token_ = esConsumes<HGCalDDDConstants, IdealGeometryRecord, edm::Transition::BeginRun>(
         edm::ESInputTag("", detectorName_));

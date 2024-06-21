@@ -442,7 +442,7 @@ Partition &singletonPartition(TICLGraph const &graph, Partition &singlePartition
     communities.push_back(singletonCommunity);
   }
   assert(!(singlePartition.getCommunities().empty()));
-  assert(!(singlePartition.getCommunities().size() == nodes.size()));
+  assert(singlePartition.getCommunities().size() == nodes.size());
 
   return singlePartition;
 }
