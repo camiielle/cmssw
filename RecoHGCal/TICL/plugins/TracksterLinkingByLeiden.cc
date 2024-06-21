@@ -95,11 +95,18 @@ void TracksterLinkingbyLeiden::linkTracksters(
     std::vector<Trackster> &resultTracksters,
     std::vector<std::vector<unsigned int>> &linkedResultTracksters,
     std::vector<std::vector<unsigned int>> &linkedTracksterIdToInputTracksterId) {
+
   //creating the graph
+  TICLGraph graph{};
+  TICLGraphProducer(input, graph);
 
   //applying Leiden algo
+  Partition partition{std::vector<Community>{}};
+  std::vector<ticl::Flat> flatFinalPartition;
+  singletonPartition(graph, partition);
+  leidenAlgorithm(graph, partition, flatFinalPartition);
 
-  //preparig result output
+  //preparing result output
   std::cout << "Il mio bellissimo algoritmo";
 }
 
@@ -142,10 +149,7 @@ void TracksterLinkingbyLeiden::leidenAlgorithm(ticl::TICLGraph &graph,
   }
 }
 
-void TracksterLinkingbyLeiden::TICLGraphProducer(const Inputs &input,
-                                                 edm::Event &evt,
-                                                 const edm::EventSetup &es,
-                                                 TICLGraph &graph) {
+void TracksterLinkingbyLeiden::TICLGraphProducer(const Inputs &input, TICLGraph &graph) {
   auto const &trackstersclue3d = input.tracksters;
 
   TICLLayerTile tracksterTilePos;
