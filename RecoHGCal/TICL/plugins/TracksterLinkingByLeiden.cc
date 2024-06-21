@@ -5,10 +5,39 @@
 #include <random>
 #include <string>
 
+#include "DataFormats/HGCalReco/interface/TICLLayerTile.h"
+
+#include "DataFormats/TrackReco/interface/Track.h"
+
+#include "TrackingTools/TrajectoryState/interface/TrajectoryStateTransform.h"
+#include "TrackingTools/GeomPropagators/interface/Propagator.h"
+#include "TrackingTools/Records/interface/TrackingComponentsRecord.h"
+
+#include "RecoLocalCalo/HGCalRecAlgos/interface/RecHitTools.h"
+#include "CommonTools/Utils/interface/StringCutObjectSelector.h"
+
+#include "MagneticField/Engine/interface/MagneticField.h"
+#include "MagneticField/Records/interface/IdealMagneticFieldRecord.h"
+
+#include "Geometry/HGCalCommonData/interface/HGCalDDDConstants.h"
+#include "Geometry/Records/interface/IdealGeometryRecord.h"
+#include "Geometry/CaloGeometry/interface/CaloGeometry.h"
+#include "Geometry/Records/interface/CaloGeometryRecord.h"
+#include "Geometry/CommonDetUnit/interface/GeomDet.h"
+
+#include "FWCore/Framework/interface/stream/EDProducer.h"
+#include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "FWCore/Utilities/interface/ESGetToken.h"
+#include "FWCore/Framework/interface/ESHandle.h"
+#include "FWCore/Framework/interface/Frameworkfwd.h"
+#include "FWCore/Framework/interface/MakerMacros.h"
+
 #include "RecoHGCal/TICL/plugins/TracksterLinkingbyLeiden.h"
 
 #include "DataFormats/GeometrySurface/interface/BoundDisk.h"
 #include "DataFormats/HGCalReco/interface/Common.h"
+#include "DataFormats/HGCalReco/interface/Trackster.h"
+#include "DataFormats/HGCalReco/interface/TICLLayerTile.h"
 
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 
@@ -66,6 +95,11 @@ void TracksterLinkingbyLeiden::linkTracksters(
     std::vector<Trackster> &resultTracksters,
     std::vector<std::vector<unsigned int>> &linkedResultTracksters,
     std::vector<std::vector<unsigned int>> &linkedTracksterIdToInputTracksterId) {
+  //creating the graph
+
+  //applying Leiden algo
+
+  //preparig result output
   std::cout << "Il mio bellissimo algoritmo";
 }
 
@@ -106,6 +140,93 @@ void TracksterLinkingbyLeiden::leidenAlgorithm(ticl::TICLGraph &graph,
   else {
     partition.flattenPartition(flatFinalPartition);
   }
+}
+
+void TracksterLinkingbyLeiden::TICLGraphProducer(const Inputs &input,
+                                                 edm::Event &evt,
+                                                 const edm::EventSetup &es,
+                                                 TICLGraph &graph) {
+  auto const &trackstersclue3d = input.tracksters;
+
+  TICLLayerTile tracksterTilePos;
+  TICLLayerTile tracksterTileNeg;
+
+  for (size_t id_t = 0; id_t < trackstersclue3d.size(); ++id_t) {
+    auto t = trackstersclue3d[id_t];
+    if (t.barycenter().eta() > 0.) {
+      tracksterTilePos.fill(t.barycenter().eta(), t.barycenter().phi(), id_t);
+    } else if (t.barycenter().eta() < 0.) {
+      tracksterTileNeg.fill(t.barycenter().eta(), t.barycenter().phi(), id_t);
+    }
+  }
+
+  std::vector<Elementary> allElemNodes;
+
+  for (size_t id_t = 0; id_t < trackstersclue3d.size(); ++id_t) {
+    auto t = trackstersclue3d[id_t];
+
+    Elementary tNode(id_t);
+
+    auto bary = t.barycenter();
+    double del = 0.1;
+
+    double eta_min = std::max(abs(bary.eta()) - del, (double)TileConstants::minEta);
+    double eta_max = std::min(abs(bary.eta()) + del, (double)TileConstants::maxEta);
+
+    if (bary.eta() > 0.) {
+      std::array<int, 4> search_box =
+          tracksterTilePos.searchBoxEtaPhi(eta_min, eta_max, bary.phi() - del, bary.phi() + del);
+      if (search_box[2] > search_box[3]) {
+        search_box[3] += TileConstants::nPhiBins;
+      }
+
+      for (int eta_i = search_box[0]; eta_i <= search_box[1]; ++eta_i) {
+        for (int phi_i = search_box[2]; phi_i <= search_box[3]; ++phi_i) {
+          auto &neighbours = tracksterTilePos[tracksterTilePos.globalBin(eta_i, (phi_i % TileConstants::nPhiBins))];
+          for (auto n : neighbours) {
+            if (trackstersclue3d[n].barycenter().z() < bary.z()) {
+              tNode.addInnerNeighbour(n);
+              tNode.addNeighbour(n);
+            } else if (trackstersclue3d[n].barycenter().z() > bary.z()) {
+              tNode.addOuterNeighbour(n);
+              tNode.addNeighbour(n);
+            }
+          }
+        }
+      }
+    }
+
+    else if (bary.eta() < 0.) {
+      std::array<int, 4> search_box =
+          tracksterTileNeg.searchBoxEtaPhi(eta_min, eta_max, bary.phi() - del, bary.phi() + del);
+      if (search_box[2] > search_box[3]) {
+        search_box[3] += TileConstants::nPhiBins;
+      }
+
+      for (int eta_i = search_box[0]; eta_i <= search_box[1]; ++eta_i) {
+        for (int phi_i = search_box[2]; phi_i <= search_box[3]; ++phi_i) {
+          auto &neighbours = tracksterTileNeg[tracksterTileNeg.globalBin(eta_i, (phi_i % TileConstants::nPhiBins))];
+          for (auto n : neighbours) {
+            if (abs(trackstersclue3d[n].barycenter().z()) < abs(bary.z())) {
+              tNode.addInnerNeighbour(n);
+              tNode.addNeighbour(n);
+            } else if (abs(trackstersclue3d[n].barycenter().z()) > abs(bary.z())) {
+              tNode.addOuterNeighbour(n);
+              tNode.addNeighbour(n);
+            }
+          }
+        }
+      }
+    }
+    allElemNodes.push_back(tNode);
+  }
+  std::vector<Node> allNodes{};
+  allNodes.reserve(allElemNodes.size());
+  for (auto const &e : allElemNodes) {
+    Node node{e};
+    allNodes.push_back(node);
+  }
+  graph.getNodes() = allNodes;
 }
 
 bool isAlgorithmDone(TICLGraph const &graph, Partition const &partition) {

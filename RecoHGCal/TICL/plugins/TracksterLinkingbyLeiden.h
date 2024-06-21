@@ -61,7 +61,7 @@ namespace ticl {
 
     void leidenAlgorithm(TICLGraph &graph, Partition &partition, std::vector<Flat> &flatFinalPartition);
 
-    void TICLGraphProducer(edm::Event &evt, const edm::EventSetup &es){};
+    void TICLGraphProducer(const Inputs &input, edm::Event &evt, const edm::EventSetup &es, TICLGraph &graph);
   };
 }  // namespace ticl
 
