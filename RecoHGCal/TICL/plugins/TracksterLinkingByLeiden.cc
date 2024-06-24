@@ -103,11 +103,12 @@ void TracksterLinkingbyLeiden::linkTracksters(
   Partition partition{std::vector<Community>{}};
   std::vector<ticl::Flat> flatFinalPartition;
   singletonPartition(graph, partition);
+
   leidenAlgorithm(graph, partition, flatFinalPartition);
 
   //preparing result output
   for (unsigned int i = 0; i < flatFinalPartition.size(); ++i) {
-    const auto& flat = flatFinalPartition[i];
+    const auto &flat = flatFinalPartition[i];
     std::vector<unsigned int> linkedTracksters;
     Trackster outTrackster;
     if (!(flat.empty())) {
@@ -135,8 +136,9 @@ void TracksterLinkingbyLeiden::leidenAlgorithm(ticl::TICLGraph &graph,
                                                ticl::Partition &partition,
                                                std::vector<Flat> &flatFinalPartition) {
   moveNodesFast(partition, gamma_);
+  std::cout << "MOVED NODES FAST\n";
 
-  if (!(isAlgorithmDone(graph, partition))) {
+  /*if (!(isAlgorithmDone(graph, partition))) {
     Partition refinedPartition = Partition{std::vector<Community>{}};
     assert(refinedPartition.getCommunities().empty());
     refinePartition(graph, partition, refinedPartition, gamma_, theta_);
@@ -160,7 +162,7 @@ void TracksterLinkingbyLeiden::leidenAlgorithm(ticl::TICLGraph &graph,
 
   else {
     partition.flattenPartition(flatFinalPartition);
-  }
+  }*/
 }
 
 void TracksterLinkingbyLeiden::TICLGraphProducer(const Inputs &input, TICLGraph &graph) {
@@ -319,7 +321,7 @@ void moveNode(Community &communityFrom, Community &communityTo, Node const &node
   communityTo.getNodes().push_back(node);
 }
 
-auto queueCommunity(Community &community, std::queue<Node> &queue) {
+void queueCommunity(Community &community, std::queue<Node> &queue) {
   //elements are added to the queue in random order
   std::random_device rd;
   std::mt19937 g(rd());
@@ -328,7 +330,6 @@ auto queueCommunity(Community &community, std::queue<Node> &queue) {
   for (auto const &node : community.getNodes()) {
     queue.push(node);
   }
-  return queue;
 }
 
 Partition &removeEmptyCommunities(Partition &partition) {
@@ -356,16 +357,31 @@ int bestCommunityIndex(Partition const &partition,
   assert(bestDeltaCPM == 0);
   int indexBestCommunity{};
   int iterationIndex{-1};
+  std::cout << __LINE__ << std::endl;
   for (auto const &community : communities) {
     ++iterationIndex;
+    std::cout << __LINE__ << std::endl;
     auto AfterMoveCPM = CPM_after_move(partition, gamma, currentCommunity, community, currentNode);
+    std::cout << __LINE__ << std::endl;
     auto deltaCPM = AfterMoveCPM - currentCPM;
+    std::cout << __LINE__ << std::endl;
     if (deltaCPM > bestDeltaCPM) {
       bestDeltaCPM = deltaCPM;
       indexBestCommunity = iterationIndex;
     }
+    std::cout << __LINE__ << std::endl;
   }
+  std::cout << __LINE__ << std::endl;
   return indexBestCommunity;
+}
+
+template <class ADAPTER>
+const auto &get_container(ADAPTER &a) {
+  struct hack : private ADAPTER {
+    static auto &get(ADAPTER &a) { return a.*(&hack::c); }
+  };
+
+  return hack::get(a);
 }
 
 Partition &moveNodesFast(Partition &partition, long long int gamma) {
@@ -379,57 +395,75 @@ Partition &moveNodesFast(Partition &partition, long long int gamma) {
     queueCommunity(community, queue);
   }
 
-  while (!queue.empty()) {
-    Node const &currentNode{queue.front()};
+  while (!(queue.empty())) {
+    Node currentNode{queue.front()};
+    queue.pop();
+    auto &queue_members = get_container(queue);
     auto currentCPM = CPM(partition, gamma);
+    std::cout << __LINE__ << std::endl;
     auto &currentCommunity = partition.getCommunities()[partition.findCommunityIndex(currentNode)];
+    std::cout << __LINE__ << std::endl;
     auto &communities = partition.getCommunities();
-
+    std::cout << __LINE__ << std::endl;
     long long int bestDeltaCPM{0};
     int indexBestCommunity{
         bestCommunityIndex(partition, communities, bestDeltaCPM, currentCommunity, currentNode, currentCPM, gamma)};
+    std::cout << __LINE__ << std::endl;
 
     //variation of quality function if I move the node to an empty community
     auto deltaCPMFromEmpty = CPM_contribution_from_new_community(currentNode, gamma) - currentCPM;
+    std::cout << __LINE__ << std::endl;
 
     // contains nbrs of currentNode that are not in bestCommunity
     std::vector<Node> currentNeighbours{};
+    std::cout << __LINE__ << std::endl;
 
     if (deltaCPMFromEmpty > bestDeltaCPM) {
       bestDeltaCPM = -1;
       Community newCommunity{std::vector<Node>{}, degree(currentNode) + 1};
+      std::cout << __LINE__ << std::endl;
       communities.push_back(newCommunity);
+      std::cout << __LINE__ << std::endl;
       moveNode(currentCommunity, newCommunity, currentNode);
+      std::cout << __LINE__ << std::endl;
       std::for_each(communities.begin(), communities.end() - 1, [&](auto const &community) {
         std::for_each(community.getNodes().begin(), community.getNodes().end(), [&](auto const &node) {
-          if (areNeighbours(currentNode, node)) {
+          if (areNeighbours(currentNode, node) &&
+              (std::find(queue_members.begin(), queue_members.end(), node) == queue_members.end())) {
             currentNeighbours.push_back(node);
           }
         });
       });
+      std::cout << __LINE__ << std::endl;
     }
 
     if (bestDeltaCPM > 0) {
       moveNode(currentCommunity, communities[indexBestCommunity], currentNode);
+      std::cout << __LINE__ << std::endl;
+
       std::for_each(communities.begin(), communities.end(), [&](auto const &community) {
         if (!(community == communities[indexBestCommunity])) {
           std::for_each(community.getNodes().begin(), community.getNodes().end(), [&](auto const &node) {
-            if (areNeighbours(currentNode, node)) {
+            if (areNeighbours(currentNode, node) &&
+                (std::find(queue_members.begin(), queue_members.end(), node) == queue_members.end())) {
               currentNeighbours.push_back(node);
             }
           });
         }
       });
+      std::cout << __LINE__ << std::endl;
     }
 
     // making sure all nbrs of currentNode who are not in bestCommunity will be visited
     for (auto const &neighbour : currentNeighbours) {
       queue.push(neighbour);
     }
+    std::cout << __LINE__ << std::endl;
   }
-
+  std::cout << __LINE__ << std::endl;
   //remove communities that, after node moving, are empty and then returns the result
   return removeEmptyCommunities(partition);
+  std::cout << __LINE__ << std::endl;
 }
 
 //fills an empty partition with a singleton partition
