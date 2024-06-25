@@ -302,15 +302,17 @@ long long int CPM_after_move(Partition const &partition,
                    std::back_inserter(vectorWithoutNode),
                    [&](Node const &n) { return !(n == node); });
       Community communityWithoutNode{vectorWithoutNode, communityFrom.getDegree()};
-      CPMResult += (static_cast<long long int>(numberOfEdges(communityWithoutNode, communityWithoutNode)) -
+      CPMResult += (numberOfEdges(communityWithoutNode, communityWithoutNode) -
                     gamma * binomialCoefficient(communitySize(communityWithoutNode), 2));
     } else if (community == communityTo) {
       Community communityWithNewNode{community};
       communityWithNewNode.getNodes().push_back(node);
-      CPMResult += (static_cast<long long int>(numberOfEdges(communityWithNewNode, communityWithNewNode)) -
+      CPMResult += (numberOfEdges(communityWithNewNode, communityWithNewNode) -
                     gamma * binomialCoefficient(communitySize(communityWithNewNode), 2));
+                    
     } else {
       CPMResult += (numberOfEdges(community, community) - gamma * binomialCoefficient(communitySize(community), 2));
+      //PROBLEM CAUSED AFTER THIS LINE
     }
   }
   return CPMResult;
@@ -357,21 +359,16 @@ int bestCommunityIndex(Partition const &partition,
   assert(bestDeltaCPM == 0);
   int indexBestCommunity{};
   int iterationIndex{-1};
-  std::cout << __LINE__ << std::endl;
   for (auto const &community : communities) {
     ++iterationIndex;
-    std::cout << __LINE__ << std::endl;
+    //PROBLEM IS IN THE LINE BELOW!!!!!
     auto AfterMoveCPM = CPM_after_move(partition, gamma, currentCommunity, community, currentNode);
-    std::cout << __LINE__ << std::endl;
     auto deltaCPM = AfterMoveCPM - currentCPM;
-    std::cout << __LINE__ << std::endl;
     if (deltaCPM > bestDeltaCPM) {
       bestDeltaCPM = deltaCPM;
       indexBestCommunity = iterationIndex;
     }
-    std::cout << __LINE__ << std::endl;
   }
-  std::cout << __LINE__ << std::endl;
   return indexBestCommunity;
 }
 
@@ -400,32 +397,23 @@ Partition &moveNodesFast(Partition &partition, long long int gamma) {
     queue.pop();
     auto &queue_members = get_container(queue);
     auto currentCPM = CPM(partition, gamma);
-    std::cout << __LINE__ << std::endl;
     auto &currentCommunity = partition.getCommunities()[partition.findCommunityIndex(currentNode)];
-    std::cout << __LINE__ << std::endl;
     auto &communities = partition.getCommunities();
-    std::cout << __LINE__ << std::endl;
     long long int bestDeltaCPM{0};
     int indexBestCommunity{
         bestCommunityIndex(partition, communities, bestDeltaCPM, currentCommunity, currentNode, currentCPM, gamma)};
-    std::cout << __LINE__ << std::endl;
 
     //variation of quality function if I move the node to an empty community
     auto deltaCPMFromEmpty = CPM_contribution_from_new_community(currentNode, gamma) - currentCPM;
-    std::cout << __LINE__ << std::endl;
 
     // contains nbrs of currentNode that are not in bestCommunity
     std::vector<Node> currentNeighbours{};
-    std::cout << __LINE__ << std::endl;
 
     if (deltaCPMFromEmpty > bestDeltaCPM) {
       bestDeltaCPM = -1;
       Community newCommunity{std::vector<Node>{}, degree(currentNode) + 1};
-      std::cout << __LINE__ << std::endl;
       communities.push_back(newCommunity);
-      std::cout << __LINE__ << std::endl;
       moveNode(currentCommunity, newCommunity, currentNode);
-      std::cout << __LINE__ << std::endl;
       std::for_each(communities.begin(), communities.end() - 1, [&](auto const &community) {
         std::for_each(community.getNodes().begin(), community.getNodes().end(), [&](auto const &node) {
           if (areNeighbours(currentNode, node) &&
@@ -434,12 +422,10 @@ Partition &moveNodesFast(Partition &partition, long long int gamma) {
           }
         });
       });
-      std::cout << __LINE__ << std::endl;
     }
 
     if (bestDeltaCPM > 0) {
       moveNode(currentCommunity, communities[indexBestCommunity], currentNode);
-      std::cout << __LINE__ << std::endl;
 
       std::for_each(communities.begin(), communities.end(), [&](auto const &community) {
         if (!(community == communities[indexBestCommunity])) {
@@ -451,19 +437,15 @@ Partition &moveNodesFast(Partition &partition, long long int gamma) {
           });
         }
       });
-      std::cout << __LINE__ << std::endl;
     }
 
     // making sure all nbrs of currentNode who are not in bestCommunity will be visited
     for (auto const &neighbour : currentNeighbours) {
       queue.push(neighbour);
     }
-    std::cout << __LINE__ << std::endl;
   }
-  std::cout << __LINE__ << std::endl;
   //remove communities that, after node moving, are empty and then returns the result
   return removeEmptyCommunities(partition);
-  std::cout << __LINE__ << std::endl;
 }
 
 //fills an empty partition with a singleton partition

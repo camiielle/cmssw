@@ -139,7 +139,7 @@ namespace ticl {
 
   std::vector<std::vector<unsigned int>> findSubComponents(std::vector<Elementary>& graphElemNodes);
 
-  int numberOfEdges(Community const& communityA, Community const& communityB);
+  long long int numberOfEdges(Community const& communityA, Community const& communityB);
 
   bool areNeighbours(Node const& nodeA, Node const& nodeB);
 
