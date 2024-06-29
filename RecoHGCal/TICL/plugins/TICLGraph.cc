@@ -1,5 +1,6 @@
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "RecoHGCal/TICL/plugins/TICLGraph.h"
+#include "TICLGraph.h"
 
 namespace ticl {
   void Elementary::findSubComponents(std::vector<Elementary>& graph,
@@ -65,7 +66,7 @@ namespace ticl {
 
   //tested on godbolt
   Flat flatten(Community const& community) {
-    int const size{communitySize(community)};
+    int const size{communitySize(community, 0)};
     Flat flattenedCommunity{};
     flattenedCommunity.reserve(size);
     flatten(community, flattenedCommunity);
@@ -81,21 +82,48 @@ namespace ticl {
       } else
         size = communitySize(std::get<Community>(node), size);
     }
+    //std::cout << "COMM (non recursive) SIZE: " << community.getNodes().size() << " " << size << std::endl;
+    assert(size >= 0);
     return size;
   }
 
-  long long int numberOfEdges(Community const& communityA, Community const& communityB) {
-    long long int numberOfEdges{};
+  //kappa indicates the number of edges for which node i is an endpoint
+  int kappa(Node const& node) {
+    if (std::holds_alternative<Elementary>(node)) {
+      return std::get<Elementary>(node).getNeighbours().size();
+    } else {
+      auto const& nodes = std::get<Community>(node).getNodes();
+      int k{0};
+      for (auto const& n : nodes) {
+        k += kappa(n);
+      }
+      return k;
+    }
+  }
+
+  int kappa(Community const& community) {
+    int k{0};
+    for (auto const& node : community.getNodes()) {
+      k += kappa(node);
+    }
+    return k;
+  }
+
+  int numberOfEdges(Community const& communityA, Community const& communityB) {
+    int numberOfEdges = 0;
     auto flattenedCommunityA = flatten(communityA);
     auto flattenedCommunityB = flatten(communityB);
+    //std::cout << "FLATTEN COMM A SIZE: " << flattenedCommunityA.size() << std::endl;
+    //std::cout << "FLATTEN COMM B SIZE: " << flattenedCommunityB.size() << std::endl;
     for (auto const& elementaryNodeA : flattenedCommunityA) {
       std::vector<unsigned int> const& neighboursA{elementaryNodeA.getNeighbours()};
+      //std::cout << "NUM NBRS A: " << neighboursA.size() << std::endl;
       for (auto const& Id : neighboursA) {
         auto it{std::find_if(flattenedCommunityB.begin(), flattenedCommunityB.end(), [=](Elementary const& elNodeB) {
           return elNodeB.getId() == Id;
         })};
         //UNTIL this line IT'S FINE, DOES NOT PRODUCE ANY PROBLEMS. THE NEXT LINE IS CAUSING THE PROBLEM!!
-           if (it != flattenedCommunityB.end()) {
+        if (it != flattenedCommunityB.end()) {
           ++numberOfEdges;
         }
       }
@@ -185,4 +213,14 @@ auto flattenedCommunityA = flatten(communityA);
     }
     return isContained;
   }
+
+  int totalEdges(TICLGraph const& graph) {
+    auto const& nodes = graph.getNodes();
+    int m{0};
+    for (auto const& n : nodes) {
+      m += kappa(n);
+    }
+    return m / 2;
+  }
+
 }  // namespace ticl

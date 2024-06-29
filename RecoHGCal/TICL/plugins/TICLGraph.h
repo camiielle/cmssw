@@ -95,7 +95,7 @@ namespace ticl {
 
   inline auto getId(Node const& node) { return std::visit(Id{}, node); }
 
-  int communitySize(Community const& community, int size = 0);
+  int communitySize(Community const& community, int size);
 
   using Flat = std::vector<Elementary>;
 
@@ -111,8 +111,7 @@ namespace ticl {
     // can i remove default constructor ?? edm::Wrapper problem
     // without default constructor i could initialize connectedComponents when building the Graph
     TICLGraph() = default;
-    TICLGraph(std::vector<Elementary> const& elemNodes, std::vector<int> const& isRootNode)
-        : isRootNode_{isRootNode} {
+    TICLGraph(std::vector<Elementary> const& elemNodes, std::vector<int> const& isRootNode) : isRootNode_{isRootNode} {
       std::vector<Node> nodes{};
       nodes.reserve(elemNodes.size());
       for (auto const& e : elemNodes) {
@@ -126,7 +125,7 @@ namespace ticl {
         : nodes_{nodes}, isRootNode_{isRootNode} {}
 
     std::vector<Node> const& getNodes() const { return nodes_; }
-    std::vector<Node>& getNodes() { return nodes_; }
+    void setNodes(std::vector<Node> const& nodes) { nodes_ = nodes; }
     Node const& getNode(int i) const { return nodes_[i]; }
     std::vector<std::vector<unsigned int>> findSubComponents();
 
@@ -139,11 +138,17 @@ namespace ticl {
 
   std::vector<std::vector<unsigned int>> findSubComponents(std::vector<Elementary>& graphElemNodes);
 
-  long long int numberOfEdges(Community const& communityA, Community const& communityB);
+  int numberOfEdges(Community const& communityA, Community const& communityB);
 
   bool areNeighbours(Node const& nodeA, Node const& nodeB);
 
   bool isCommunityContained(Community const& community, Community const& subset);
+
+  int kappa(Node const& node);
+
+  int kappa(Community const & community);
+
+  int totalEdges(TICLGraph const& graph);
 
   class Partition {
     std::vector<Community> communities_{};

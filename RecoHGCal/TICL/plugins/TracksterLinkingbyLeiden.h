@@ -55,31 +55,31 @@ namespace ticl {
     edm::ESHandle<MagneticField> bfield_;
     edm::ESHandle<Propagator> propagator_;
 
-    long long int gamma_{
-        1};            //resolution parameter of the algortihm. The higher the gamma, the more communities are yielded
-    double theta_{1};  //parameter of the refinement step
+    int gamma_{1};  //resolution parameter of the algortihm. The higher the gamma, the more communities are yielded
+    double theta_{0.01};  //parameter of the refinement step (I am using the same value the authors of the paper used)
 
     void leidenAlgorithm(TICLGraph &graph, Partition &partition, std::vector<Flat> &flatFinalPartition);
 
     void TICLGraphProducer(const Inputs &input, TICLGraph &graph);
   };
+
+  bool isAlgorithmDone(TICLGraph const &graph, Partition const &partition);
+
+  Partition &removeEmptyCommunities(Partition &partition);
+
+  Partition &refinePartition(TICLGraph const &graph,
+                                   Partition &partition,
+                                   Partition &singlePartition,
+                                   int gamma,
+                                   double theta);
+
+  Partition &moveNodesFast(TICLGraph const& graph, Partition &partition);
+
+  Partition &singletonPartition(TICLGraph const &graph, Partition &singlePartition);
+
+  Partition &mergeNodesSubset(Partition &partition, Community const &subset, int gamma);
+
+  TICLGraph &aggregateGraph(TICLGraph &graph, Partition const &partition);
 }  // namespace ticl
 
-bool isAlgorithmDone(ticl::TICLGraph const &graph, ticl::Partition const &partition);
-
-ticl::Partition &removeEmptyCommunities(ticl::Partition &partition);
-
-ticl::Partition &refinePartition(ticl::TICLGraph const &graph,
-                                 ticl::Partition &partition,
-                                 ticl::Partition &singlePartition,
-                                 long long int gamma,
-                                 double theta);
-
-ticl::Partition &moveNodesFast(ticl::Partition &partition, long long int gamma);
-
-ticl::Partition &singletonPartition(ticl::TICLGraph const &graph, ticl::Partition &singlePartition);
-
-ticl::Partition &mergeNodesSubset(ticl::Partition &partition, ticl::Community const &subset, long long int gamma);
-
-ticl::TICLGraph &aggregateGraph(ticl::TICLGraph &graph, ticl::Partition const &partition);
 #endif
