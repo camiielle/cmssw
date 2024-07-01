@@ -8,11 +8,11 @@ namespace ticl {
                                      std::string& tabs) {
     tabs += "\t";
     if (!alreadyVisited_) {
-      LogDebug("TICLGraph") << tabs << " Visiting node " << index_ << std::endl;
+      //LogDebug("TICLGraph") << tabs << " Visiting node " << index_ << std::endl;
       alreadyVisited_ = true;
       subComponent.push_back(index_);
       for (auto const& neighbour : outerNeighboursId_) {
-        LogDebug("TICLGraph") << tabs << " Trying to visit " << neighbour << std::endl;
+        //LogDebug("TICLGraph") << tabs << " Trying to visit " << neighbour << std::endl;
         graph[neighbour].findSubComponents(graph, subComponent, tabs);
       }
     }
@@ -39,7 +39,7 @@ namespace ticl {
 
   struct Equal {
     bool operator()(Elementary const& e1, Elementary const& e2) {
-      return (e1.getId() == e2.getId()) && (e1.getNeighbours() == e2.getNeighbours());
+      return (e1.getId() == e2.getId());
     }
 
     bool operator()(Community const& c1, Community const& c2) {
