@@ -589,7 +589,7 @@ namespace ticl {
         deltaModularityFromEmpty = delta_modularity_from_empty(nEdges, currentCommunity, currentNode);
       }
 
-      if (deltaModularityFromEmpty > bestDeltaModularity && deltaModularityFromEmpty > 0.001 * (5 * deg + 1)) {
+      if (deltaModularityFromEmpty > bestDeltaModularity && deltaModularityFromEmpty > 0.0001) {
         Community newCommunity{{}, degree(currentNode) + 1};
         moveNode(currentCommunity, newCommunity, currentNode);
         assert(!(newCommunity.getNodes().empty()));
@@ -604,7 +604,7 @@ namespace ticl {
             }
           });
         });
-      } else if (bestDeltaModularity > 0.0001 * (5 * deg + 1)) {
+      } else if (bestDeltaModularity > 0.0001) {
         moveNode(currentCommunity, communities[indexBestCommunity], currentNode);
         hasNodeBeenMoved = true;
         // making sure all nbrs of currentNode who are not in bestCommunity will be visited
@@ -658,7 +658,7 @@ namespace ticl {
     assert(edges >= 0);
     auto nodeSize{communitySize(singletonCommunity, 0)};
     auto subsetSize{communitySize(subset, 0)};
-    return edges >= (gamma * nodeSize * (subsetSize - nodeSize));
+    return 2*edges >= (gamma * nodeSize * (subsetSize - nodeSize));
   }
 
   bool isCommunityWellConnected(Community const &community, Community const &subset, int gamma) {
@@ -672,7 +672,7 @@ namespace ticl {
     assert(edges >= 0);
     auto comSize{communitySize(community, 0)};
     auto subsetSize{communitySize(subset, 0)};
-    return (edges >= (gamma * comSize * (subsetSize - comSize)));
+    return (2*edges >= (gamma * comSize * (subsetSize - comSize)));
   }
 
   int extractRandomCommunityIndex(std::vector<Community> const &communities,
